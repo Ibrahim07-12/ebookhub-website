@@ -2,93 +2,115 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const categories = [
-  {
-    name: "Programming & Technology",
-    description: "Comprehensive collection of programming tutorials, web development guides, software engineering principles, and latest technology trends. Perfect for developers, students, and tech enthusiasts.",
-    price: 50000,
-    originalPrice: 150000,
-    driveLink: "https://drive.google.com/drive/folders/your-programming-folder",
-    ebookCount: 150,
-    image: "/images/programming.jpg"
-  },
-  {
-    name: "Business & Entrepreneurship", 
-    description: "Essential business strategies, startup guides, marketing principles, leadership skills, and entrepreneurship insights from successful business leaders and industry experts.",
-    price: 75000,
-    originalPrice: 200000,
-    driveLink: "https://drive.google.com/drive/folders/your-business-folder",
-    ebookCount: 120,
-    image: "/images/business.jpg"
-  },
-  {
-    name: "Personal Development",
-    description: "Transform your life with books on productivity, motivation, habits, goal setting, time management, and personal growth from renowned authors and life coaches.",
-    price: 45000,
-    originalPrice: 120000,
-    driveLink: "https://drive.google.com/drive/folders/your-personal-dev-folder",
-    ebookCount: 100,
-    image: "/images/personal-dev.jpg"
-  },
-  {
-    name: "Health & Fitness",
-    description: "Complete health and wellness guides covering nutrition, exercise routines, mental health, yoga, meditation, and healthy lifestyle practices for optimal well-being.",
-    price: 60000,
-    originalPrice: 180000,
-    driveLink: "https://drive.google.com/drive/folders/your-health-folder",
-    ebookCount: 90,
-    image: "/images/health.jpg"
-  },
-  {
-    name: "Finance & Investment",
-    description: "Master your finances with expert guides on personal finance, investment strategies, cryptocurrency, stock market analysis, and wealth building techniques.",
-    price: 80000,
-    originalPrice: 250000,
-    driveLink: "https://drive.google.com/drive/folders/your-finance-folder",
-    ebookCount: 110,
-    image: "/images/finance.jpg"
-  },
-  {
-    name: "Design & Creativity",
-    description: "Unleash your creative potential with books on graphic design, UI/UX principles, photography, digital art, creative writing, and innovative design thinking.",
-    price: 55000,
-    originalPrice: 160000,
-    driveLink: "https://drive.google.com/drive/folders/your-design-folder",
-    ebookCount: 85,
-    image: "/images/design.jpg"
-  },
-  {
-    name: "Marketing & Sales",
-    description: "Advanced marketing strategies, digital marketing techniques, sales psychology, social media marketing, content creation, and customer acquisition methods.",
-    price: 70000,
-    originalPrice: 190000,
-    driveLink: "https://drive.google.com/drive/folders/your-marketing-folder",
-    ebookCount: 95,
-    image: "/images/marketing.jpg"
-  }
-]
-
 async function main() {
+  // Seed categories
+  const categories = [
+    {
+      name: "Bisnis & Entrepreneurship",
+      description: "Panduan lengkap untuk membangun dan mengembangkan bisnis Anda",
+      image: "/images/business-entrepreneurship.jpg",
+      slug: "bisnis-entrepreneurship",
+      ebookCount: 100,
+      price: 15000,
+      originalPrice: 50000,
+      driveLink: "https://drive.google.com/drive/folders/bisnis-entrepreneurship"
+    },
+    {
+      name: "Digital Marketing",
+      description: "Strategi marketing digital untuk meningkatkan penjualan online",
+      image: "/images/digital-marketing.jpg", 
+      slug: "digital-marketing",
+      ebookCount: 100,
+      price: 12000,
+      originalPrice: 40000,
+      driveLink: "https://drive.google.com/drive/folders/digital-marketing"
+    },
+    {
+      name: "Kesehatan & Lifestyle",
+      description: "Tips kesehatan, gaya hidup sehat, dan wellness untuk kehidupan yang lebih baik",
+      image: "/images/health-lifestyle.jpg",
+      slug: "kesehatan-lifestyle", 
+      ebookCount: 100,
+      price: 10000,
+      originalPrice: 35000,
+      driveLink: "https://drive.google.com/drive/folders/kesehatan-lifestyle"
+    },
+    {
+      name: "Keuangan & Investasi",
+      description: "Panduan mengelola keuangan pribadi dan strategi investasi yang menguntungkan",
+      image: "/images/finance-investment.jpg",
+      slug: "keuangan-investasi",
+      ebookCount: 100,
+      price: 15000,
+      originalPrice: 50000,
+      driveLink: "https://drive.google.com/drive/folders/keuangan-investasi"
+    },
+    {
+      name: "Kreatif & Desain",
+      description: "Teknik desain grafis, UI/UX, dan pengembangan kreativitas visual",
+      image: "/images/creative-design.jpg",
+      slug: "kreatif-desain",
+      ebookCount: 100,
+      price: 12000,
+      originalPrice: 40000,
+      driveLink: "https://drive.google.com/drive/folders/kreatif-desain"
+    },
+    {
+      name: "Pendidikan & Pengembangan Diri",
+      description: "Pengembangan diri, skill building, dan pembelajaran berkelanjutan",
+      image: "/images/education-self-development.jpg",
+      slug: "pendidikan-pengembangan-diri",
+      ebookCount: 100,
+      price: 10000,
+      originalPrice: 35000,
+      driveLink: "https://drive.google.com/drive/folders/pendidikan-pengembangan-diri"
+    },
+    {
+      name: "Teknologi & Programming",
+      description: "Panduan programming, teknologi terbaru, dan pengembangan software",
+      image: "/images/technology-programming.jpg",
+      slug: "teknologi-programming",
+      ebookCount: 100,
+      price: 15000,
+      originalPrice: 50000,
+      driveLink: "https://drive.google.com/drive/folders/teknologi-programming"
+    }
+  ]
+
   console.log('🌱 Starting seed...')
-  
-  // Clear existing categories
-  await prisma.category.deleteMany()
-  console.log('🗑️  Cleared existing categories')
-  
-  // Create categories
+
   for (const category of categories) {
-    const created = await prisma.category.create({
-      data: category,
+    await prisma.category.upsert({
+      where: { name: category.name },
+      update: {
+        description: category.description,
+        image: category.image,
+        slug: category.slug,
+        ebookCount: category.ebookCount,
+        price: category.price,
+        originalPrice: category.originalPrice,
+        driveLink: category.driveLink,
+      },
+      create: {
+        name: category.name,
+        description: category.description,
+        image: category.image,
+        slug: category.slug,
+        ebookCount: category.ebookCount,
+        price: category.price,
+        originalPrice: category.originalPrice,
+        driveLink: category.driveLink,
+      },
     })
-    console.log(`✅ Created category: ${created.name}`)
+    console.log(`✅ Created/Updated category: ${category.name}`)
   }
-  
-  console.log('🎉 Seeding completed!')
+
+  console.log('🎉 Seed completed!')
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seeding:', e)
+    console.error('❌ Error during seed:', e)
     process.exit(1)
   })
   .finally(async () => {
