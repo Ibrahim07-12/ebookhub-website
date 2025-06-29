@@ -52,21 +52,15 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "database"
   },
   pages: {
     signIn: "/auth/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        (session.user as any).id = token.id as string
+    async session({ session, user }) {
+      if (session.user) {
+        (session.user as any).id = user.id
       }
       return session
     },
