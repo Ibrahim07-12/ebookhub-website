@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:seed": "npx tsx scripts/seed.ts",
+    "db:push": "npx prisma db push",
+    "db:generate": "npx prisma generate"
   },
   "dependencies": {
     "react": "^19.0.0",
