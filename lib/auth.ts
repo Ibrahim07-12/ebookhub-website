@@ -64,5 +64,17 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
+    async signIn({ user, account, profile }) {
+      // Allow sign in for Google provider
+      if (account?.provider === "google") {
+        return true
+      }
+      // Allow sign in for credentials provider
+      if (account?.provider === "credentials") {
+        return true
+      }
+      return true
+    },
   },
+  debug: process.env.NODE_ENV === "development",
 }
