@@ -1,13 +1,3 @@
 {
-  "buildCommand": "prisma generate && next build",
-  "installCommand": "npm install && prisma generate",
-  "framework": "nextjs",
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
-  "env": {
-    "NEXT_PUBLIC_BASE_URL": "https://ebookhub-website.vercel.app"
-  }
+  "buildCommand": "prisma generate && next build"
 }
