@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { BookOpen, Menu, X, User, LogOut } from "lucide-react";
+import { BookOpen, Menu, X, User, LogOut, ShoppingBag } from "lucide-react";
+import Link from "next/link";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +45,13 @@ export function Navbar() {
               <div className="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
             ) : session ? (
               <div className="flex items-center space-x-4">
+                <Link 
+                  href="/my-purchases"
+                  className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>My Purchases</span>
+                </Link>
                 <div className="flex items-center space-x-2">
                   {session.user?.image ? (
                     <img
@@ -130,6 +138,14 @@ export function Navbar() {
                         {session.user?.name || session.user?.email}
                       </span>
                     </div>
+                    <Link
+                      href="/my-purchases"
+                      className="flex items-center space-x-2 w-full text-left text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      <span>My Purchases</span>
+                    </Link>
                     <button
                       onClick={() => signOut()}
                       className="w-full text-left bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-base font-medium"

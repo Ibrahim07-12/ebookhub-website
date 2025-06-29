@@ -90,8 +90,10 @@ model Purchase {
   categoryId    String
   orderId       String   @unique
   amount        Float
-  status        String   @default("pending") // pending, paid, failed, expired
+  status        String   @default("pending") // pending, success, failed, expired
   paymentMethod String?
+  paymentType   String?  // payment type from Midtrans
+  transactionId String?  // transaction ID from Midtrans
   snapToken     String?
   downloadLink  String?
   emailSent     Boolean  @default(false)

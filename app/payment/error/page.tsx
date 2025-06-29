@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { XCircle, ArrowLeft, RefreshCw } from "lucide-react";
 
-export default function PaymentErrorPage() {
+function PaymentErrorContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -134,5 +135,17 @@ export default function PaymentErrorPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+      </div>
+    }>
+      <PaymentErrorContent />
+    </Suspense>
   );
 }
