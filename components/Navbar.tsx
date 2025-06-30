@@ -8,6 +8,7 @@ import Link from "next/link";
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
+  console.log("Navbar session", session, status);
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">

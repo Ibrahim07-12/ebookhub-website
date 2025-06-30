@@ -45,9 +45,8 @@ function LoginForm() {
         setError(result.error || "Email atau password salah");
         console.error("[LOGIN ERROR]", result);
       } else {
-        // Get updated session and redirect
-        await getSession();
-        window.location.href = callbackUrl;
+        // Redirect ke halaman tujuan dan biarkan NextAuth mengatur session
+        router.replace(callbackUrl);
       }
     } catch (error) {
       setError("Terjadi kesalahan. Silakan coba lagi.");

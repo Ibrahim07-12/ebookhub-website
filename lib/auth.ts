@@ -45,6 +45,14 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Tambahkan log user yang dikembalikan
+        console.log("[AUTH] User dikembalikan ke NextAuth authorize:", {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        });
+
         return {
           id: user.id,
           email: user.email,
@@ -55,24 +63,36 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "database"
+    strategy: "jwt"
   },
   pages: {
     signIn: "/auth/login",
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        (session.user as any).id = user.id
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.image = user.image;
       }
-      return session
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = (token.image as string) || null;
+      }
+      return session;
     },
     async signIn({ user, account, profile }) {
       // Allow sign in for Google provider
       if (account?.provider === "google") {
         return true
       }
-      // Allow sign in for credentials provider
+      // Allow sign in for Credentials provider
       if (account?.provider === "credentials") {
         return true
       }
