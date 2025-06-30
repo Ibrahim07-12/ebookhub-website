@@ -54,18 +54,22 @@ export async function POST(request: NextRequest) {
       });
       console.log('Purchase updated to success:', orderId);
 
-      // Send email with ebook link
-      try {
-        await sendEbookEmail({
-          userEmail: purchase.user.email!,
-          userName: purchase.user.name || '',
-          categoryName: purchase.category.name,
-          driveLink: purchase.category.driveLink,
-          orderId: purchase.orderId,
-        });
-        console.log('Ebook email sent to:', purchase.user.email);
-      } catch (emailErr) {
-        console.error('Failed to send ebook email:', emailErr);
+      // Send email with ebook link (handle null email)
+      if (purchase.user.email) {
+        try {
+          await sendEbookEmail({
+            userEmail: purchase.user.email,
+            userName: purchase.user.name || purchase.user.email,
+            categoryName: purchase.category.name,
+            driveLink: purchase.category.driveLink,
+            orderId: purchase.orderId,
+          });
+          console.log('Ebook email sent to:', purchase.user.email);
+        } catch (emailErr) {
+          console.error('Failed to send ebook email:', emailErr);
+        }
+      } else {
+        console.error('User email is null, cannot send ebook email.');
       }
     } else {
       // If not success, log status
