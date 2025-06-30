@@ -65,14 +65,18 @@ export async function POST(request: NextRequest) {
         data: { status: 'success' },
       });
 
-      // Kirim email link download ke user
-      await sendEbookEmail({
-        userEmail: purchase.user.email,
-        userName: purchase.user.name || purchase.user.email,
-        categoryName: purchase.category.name,
-        driveLink: purchase.category.driveLink,
-        orderId: order_id,
-      });
+      // Kirim email link download ke user (handle null email)
+      if (purchase.user.email) {
+        await sendEbookEmail({
+          userEmail: purchase.user.email,
+          userName: purchase.user.name || purchase.user.email,
+          categoryName: purchase.category.name,
+          driveLink: purchase.category.driveLink,
+          orderId: order_id,
+        });
+      } else {
+        console.error('User email is null, cannot send ebook email.');
+      }
     } else if (transaction_status === 'pending') {
       await prisma.purchase.update({
         where: { orderId: order_id },
