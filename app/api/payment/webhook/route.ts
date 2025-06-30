@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       transaction_time
     });
 
-    // Find the purchase by order_id
+    // Find the purchase by order_id, include user & category
     const purchase = await prisma.purchase.findUnique({
       where: { orderId: order_id },
       include: {
@@ -58,58 +58,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Purchase not found' }, { status: 404 });
     }
 
-    // Update purchase status based on transaction_status
-    let newStatus: string;
-    
-    switch (transaction_status) {
-      case 'capture':
-      case 'settlement':
-        newStatus = 'success';
-        break;
-      case 'pending':
-        newStatus = 'pending';
-        break;
-      case 'deny':
-      case 'cancel':
-      case 'expire':
-      case 'failure':
-        newStatus = 'failed';
-        break;
-      default:
-        newStatus = 'pending';
-    }
+    // Update status jika pembayaran sukses
+    if (transaction_status === 'settlement' || transaction_status === 'capture') {
+      await prisma.purchase.update({
+        where: { orderId: order_id },
+        data: { status: 'success' },
+      });
 
-    // Update purchase in database
-    const updatedPurchase = await prisma.purchase.update({
-      where: { id: purchase.id },
-      data: {
-        status: newStatus,
-        transactionId: transaction_id,
-        paymentType: payment_type,
-        updatedAt: new Date()
-      },
-      include: {
-        user: true,
-        category: true
-      }
-    });
-
-    // If payment is successful, send ebook email
-    if (newStatus === 'success' && purchase.status !== 'success') {
-      try {
-        await sendEbookEmail({
-          userEmail: updatedPurchase.user.email!,
-          userName: updatedPurchase.user.name || 'Customer',
-          categoryName: updatedPurchase.category.name,
-          driveLink: updatedPurchase.category.driveLink || '',
-          orderId: order_id
-        });
-        
-        console.log('Ebook email sent to:', updatedPurchase.user.email);
-      } catch (emailError) {
-        console.error('Failed to send ebook email:', emailError);
-        // Don't fail the webhook if email fails
-      }
+      // Kirim email link download ke user
+      await sendEbookEmail({
+        userEmail: purchase.user.email,
+        userName: purchase.user.name || purchase.user.email,
+        categoryName: purchase.category.name,
+        driveLink: purchase.category.driveLink,
+        orderId: order_id,
+      });
+    } else if (transaction_status === 'pending') {
+      await prisma.purchase.update({
+        where: { orderId: order_id },
+        data: { status: 'pending' },
+      });
+    } else if (transaction_status === 'expire' || transaction_status === 'cancel') {
+      await prisma.purchase.update({
+        where: { orderId: order_id },
+        data: { status: 'failed' },
+      });
     }
 
     return NextResponse.json({ status: 'ok' });

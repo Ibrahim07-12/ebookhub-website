@@ -44,6 +44,17 @@ function PaymentPageContent() {
     fetchCategoryDetails();
   }, [status, session, categoryId]);
 
+  useEffect(() => {
+    // Load Midtrans Snap.js
+    if (typeof window !== 'undefined' && !document.getElementById('midtrans-script')) {
+      const script = document.createElement('script');
+      script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+      script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-hV2IN7J6PxRcw4jb');
+      script.id = 'midtrans-script';
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const fetchCategoryDetails = async () => {
     try {
       const response = await fetch(`/api/categories/${categoryId}`);
@@ -69,36 +80,36 @@ function PaymentPageContent() {
     }).format(price);
   };
 
-  const handlePayment = async () => {
-    if (!category || !session) return;
-    
+  const handlePay = async () => {
     setProcessing(true);
-    
     try {
-      // Create payment transaction
-      const response = await fetch('/api/payment/create', {
+      const res = await fetch('/api/payment/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          categoryId: category.id,
-          userId: session.user?.id,
-          amount: category.price,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId: category?.id, amount: category?.price }),
       });
-
-      const data = await response.json();
-      
-      if (data.token) {
-        // Redirect to Midtrans payment page
-        window.location.href = data.redirect_url;
+      const data = await res.json();
+      if (data.snap_token) {
+        // @ts-ignore
+        window.snap.pay(data.snap_token, {
+          onSuccess: function(result: any) {
+            router.push(`/payment/success?orderId=${data.orderId}`);
+          },
+          onPending: function(result: any) {
+            router.push(`/payment/pending?orderId=${data.orderId}`);
+          },
+          onError: function(result: any) {
+            alert('Pembayaran gagal. Silakan coba lagi.');
+          },
+          onClose: function() {
+            setProcessing(false);
+          }
+        });
       } else {
-        throw new Error('Failed to create payment');
+        alert('Gagal membuat transaksi Midtrans.');
       }
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi.');
+    } catch (err) {
+      alert('Terjadi kesalahan.');
     } finally {
       setProcessing(false);
     }
@@ -245,21 +256,11 @@ function PaymentPageContent() {
 
             {/* Payment Button */}
             <button
-              onClick={handlePayment}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg text-lg font-bold mt-6"
+              onClick={handlePay}
               disabled={processing}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
-              {processing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Memproses...</span>
-                </>
-              ) : (
-                <>
-                  <CreditCard className="h-5 w-5" />
-                  <span>Bayar Sekarang - {formatPrice(category.price)}</span>
-                </>
-              )}
+              {processing ? 'Memproses...' : `Bayar Sekarang - Rp ${category?.price?.toLocaleString('id-ID')}`}
             </button>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">

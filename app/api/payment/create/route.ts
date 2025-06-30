@@ -58,28 +58,27 @@ export async function POST(request: NextRequest) {
     const purchase = await prisma.purchase.create({
       data: {
         userId: session.user.id,
-        categoryId: categoryId,
-        orderId: orderId,
-        amount: amount,
+        categoryId: category.id,
+        orderId,
+        amount,
         status: 'pending',
-        paymentMethod: 'midtrans',
       },
     });
 
     // Send order confirmation email
-    try {
-      await sendOrderConfirmationEmail({
-        userEmail: session.user.email!,
-        userName: session.user.name || 'Customer',
-        categoryName: category.name,
-        orderId: orderId,
-        amount: amount
-      });
-      console.log('Order confirmation email sent to:', session.user.email);
-    } catch (emailError) {
-      console.error('Failed to send order confirmation email:', emailError);
-      // Don't fail the order if email fails
-    }
+    // try {
+    //   await sendOrderConfirmationEmail({
+    //     userEmail: session.user.email!,
+    //     userName: session.user.name || 'Customer',
+    //     categoryName: category.name,
+    //     orderId: orderId,
+    //     amount: amount
+    //   });
+    //   console.log('Order confirmation email sent to:', session.user.email);
+    // } catch (emailError) {
+    //   console.error('Failed to send order confirmation email:', emailError);
+    //   // Don't fail the order if email fails
+    // }
 
     // For now, return dummy response since we don't have real Midtrans keys
     if (!midtransServerKey || midtransServerKey.includes('dummy')) {
@@ -92,70 +91,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare Midtrans payload
-    const midtransPayload = {
+    const payload = {
       transaction_details: {
         order_id: orderId,
         gross_amount: amount,
       },
       customer_details: {
-        first_name: session.user.name || 'Customer',
         email: session.user.email,
+        first_name: session.user.name || session.user.email,
       },
       item_details: [
         {
-          id: categoryId,
+          id: category.id,
           price: amount,
           quantity: 1,
-          name: `Ebook ${category.name}`,
-          category: 'Digital Product',
+          name: category.name,
         },
       ],
-      callbacks: {
-        finish: `${process.env.NEXTAUTH_URL}/payment/success?order_id=${orderId}`,
-        error: `${process.env.NEXTAUTH_URL}/payment/error?order_id=${orderId}`,
-        pending: `${process.env.NEXTAUTH_URL}/payment/pending?order_id=${orderId}`,
-      },
     };
 
-    // Create transaction with Midtrans
-    const midtransResponse = await fetch(midtransBaseUrl, {
+    // Call Midtrans Snap API
+    const response = await fetch(midtransBaseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(midtransServerKey + ':').toString('base64')}`,
+        'Accept': 'application/json',
+        'Authorization':
+          'Basic ' + Buffer.from(midtransServerKey + ':').toString('base64'),
       },
-      body: JSON.stringify(midtransPayload),
+      body: JSON.stringify(payload),
     });
+    const midtransRes = await response.json();
 
-    const midtransData = await midtransResponse.json();
-
-    if (!midtransResponse.ok) {
-      console.error('Midtrans error:', midtransData);
-      
-      // Delete the purchase record if Midtrans fails
-      await prisma.purchase.delete({
-        where: { id: purchase.id },
-      });
-
-      return NextResponse.json(
-        { error: 'Failed to create payment transaction' },
-        { status: 500 }
-      );
+    if (!midtransRes.token) {
+      return NextResponse.json({ error: 'Failed to create transaction', midtransRes }, { status: 500 });
     }
 
-    // Update purchase record with Midtrans token
-    await prisma.purchase.update({
-      where: { id: purchase.id },
-      data: { 
-        snapToken: midtransData.token,
-      },
-    });
-
-    return NextResponse.json({
-      token: midtransData.token,
-      redirect_url: midtransData.redirect_url,
-      order_id: orderId,
-    });
+    // Return snap_token to frontend
+    return NextResponse.json({ snap_token: midtransRes.token, redirect_url: midtransRes.redirect_url, orderId });
 
   } catch (error) {
     console.error('Payment creation error:', error);
