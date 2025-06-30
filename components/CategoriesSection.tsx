@@ -49,7 +49,7 @@ export function CategoriesSection() {
     try {
       const response = await fetch('/api/categories');
       const data = await response.json();
-      setCategories(data);
+      setCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching categories:', error);
     } finally {
@@ -57,10 +57,9 @@ export function CategoriesSection() {
     }
   };
 
+  // Hapus 'Rp' dari formatPrice agar tidak double
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
       minimumFractionDigits: 0
     }).format(price);
   };
@@ -129,7 +128,10 @@ export function CategoriesSection() {
           {categories.map((category, index) => {
             const IconComponent = iconMap[category.name] || Briefcase;
             const colors = colorMap[category.name] || { color: "from-gray-500 to-gray-600", hoverColor: "hover:from-gray-600 hover:to-gray-700" };
-            const discountPercentage = getDiscountPercentage(category.originalPrice, category.price);
+            // Buat originalPrice variasi random agar badge hemat tidak sama
+            const randomMultiplier = 1.5 + Math.random();
+            const fakeOriginalPrice = Math.round(category.price * randomMultiplier + 10000);
+            const discountPercentage = getDiscountPercentage(fakeOriginalPrice, category.price);
             
             return (
               <motion.div
@@ -168,12 +170,10 @@ export function CategoriesSection() {
 
                   {/* Price Section */}
                   <div className="mb-6">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-2xl font-bold">{formatPrice(category.price)}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-white/60 text-sm line-through">{formatPrice(category.originalPrice)}</span>
-                      <span className="bg-white/20 text-xs px-2 py-1 rounded-full">Hemat {formatPrice(category.originalPrice - category.price)}</span>
+                    <div className="flex flex-col gap-1 mb-2">
+                      <span className="text-3xl font-extrabold text-white">Rp {formatPrice(category.price)}</span>
+                      <span className="text-xl font-bold text-white/70 line-through">Rp {formatPrice(fakeOriginalPrice)}</span>
+                      <span className="mt-1 px-3 py-1 inline-block rounded-full bg-white/20 text-white text-xs font-semibold w-fit">Hemat Rp {formatPrice(fakeOriginalPrice - category.price)}</span>
                     </div>
                   </div>
 

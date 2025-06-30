@@ -42,11 +42,12 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Email atau password salah");
+        setError(result.error || "Email atau password salah");
+        console.error("[LOGIN ERROR]", result);
       } else {
         // Get updated session and redirect
         await getSession();
-        router.push(callbackUrl);
+        window.location.href = callbackUrl;
       }
     } catch (error) {
       setError("Terjadi kesalahan. Silakan coba lagi.");

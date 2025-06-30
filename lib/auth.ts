@@ -20,26 +20,29 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          console.error("[AUTH] Email/password kosong");
+          return null;
         }
 
         const user = await prisma.user.findUnique({
           where: {
             email: credentials.email
           }
-        })
+        });
 
         if (!user || !user.password) {
-          return null
+          console.error("[AUTH] User tidak ditemukan atau password kosong", credentials.email);
+          return null;
         }
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password
-        )
+        );
 
         if (!isPasswordValid) {
-          return null
+          console.error("[AUTH] Password salah", credentials.email);
+          return null;
         }
 
         return {
@@ -47,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
-        }
+        };
       }
     })
   ],

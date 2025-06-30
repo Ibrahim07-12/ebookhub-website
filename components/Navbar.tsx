@@ -16,25 +16,38 @@ export function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <BookOpen className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-              EbookBlajr
+            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white select-none">
+              <span className="italic">Ebook</span>
+              <span className="italic text-blue-600">Blajr</span>
             </span>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              <a href="#home" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <a
+                href="#home"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 Home
               </a>
-              <a href="#categories" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <a
+                href="#categories"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 Categories
               </a>
-              <a href="#about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                About
+              <a
+                href="#about"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Tentang
               </a>
-              <a href="#contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                Contact
+              <a
+                href="#contact"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Kontak
               </a>
             </div>
           </div>
@@ -45,7 +58,7 @@ export function Navbar() {
               <div className="animate-pulse bg-gray-200 h-8 w-20 rounded"></div>
             ) : session ? (
               <div className="flex items-center space-x-4">
-                <Link 
+                <Link
                   href="/my-purchases"
                   className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
@@ -83,7 +96,7 @@ export function Navbar() {
                   Login with Google
                 </button>
                 <button
-                  onClick={() => window.location.href = '/auth/login'}
+                  onClick={() => (window.location.href = "/auth/login")}
                   className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Login
@@ -107,19 +120,31 @@ export function Navbar() {
         {isOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t dark:border-gray-700">
-              <a href="#home" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="#home"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+              >
                 Home
               </a>
-              <a href="#categories" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="#categories"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+              >
                 Categories
               </a>
-              <a href="#about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
-                About
+              <a
+                href="#about"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+              >
+                Tentang
               </a>
-              <a href="#contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">
-                Contact
+              <a
+                href="#contact"
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+              >
+                Kontak
               </a>
-              
+
               {/* Mobile Auth */}
               <div className="pt-4 border-t dark:border-gray-700">
                 {session ? (
@@ -162,7 +187,7 @@ export function Navbar() {
                       Login with Google
                     </button>
                     <button
-                      onClick={() => window.location.href = '/auth/login'}
+                      onClick={() => (window.location.href = "/auth/login")}
                       className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-md text-base font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
                       Login
