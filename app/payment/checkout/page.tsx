@@ -46,7 +46,9 @@ export default function PaymentCheckoutPage() {
         script.src = snapJsUrl;
         script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '');
         script.onload = () => {
-          window.snap.pay(snapToken);
+          if (window.snap) {
+            window.snap.pay(snapToken);
+          }
         };
         document.body.appendChild(script);
       }
