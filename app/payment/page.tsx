@@ -28,6 +28,19 @@ function PaymentPageContent() {
   const categoryName = searchParams?.get('categoryName');
   const price = searchParams?.get('price');
 
+  // Map for custom originalPrice display (not from DB)
+  const customOriginalPrices: { [key: string]: number } = {
+    "Bisnis & Entrepreneurship": 40000,
+    "Digital Marketing": 50000,
+    "Kesehatan & Lifestyle": 45000,
+    "Keuangan & Investasi": 50000,
+    "Kreatif & Desain": 35000,
+    "Pendidikan & Pengembangan Diri": 45000,
+    "Teknologi & Programming": 40000,
+  };
+
+  const displayOriginalPrice = category ? (customOriginalPrices[category.name] ?? category.originalPrice) : 0;
+
   useEffect(() => {
     if (status === "loading") return;
     
@@ -188,7 +201,7 @@ function PaymentPageContent() {
                   </span>
                   <div className="text-right">
                     <div className="text-sm text-gray-500 line-through">
-                      {formatPrice(category.originalPrice)}
+                      {formatPrice(displayOriginalPrice)}
                     </div>
                     <div className="text-lg font-bold text-blue-600">
                       {formatPrice(category.price)}
@@ -207,7 +220,7 @@ function PaymentPageContent() {
                   </span>
                 </div>
                 <p className="text-sm text-green-600 mt-1">
-                  Hemat {formatPrice(category.originalPrice - category.price)}!
+                  Hemat {formatPrice(displayOriginalPrice - category.price)}!
                 </p>
               </div>
             </div>

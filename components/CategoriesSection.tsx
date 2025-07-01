@@ -36,6 +36,17 @@ const colorMap: { [key: string]: { color: string; hoverColor: string } } = {
   "Keuangan & Investasi": { color: "from-yellow-500 to-yellow-600", hoverColor: "hover:from-yellow-600 hover:to-yellow-700" },
 };
 
+// Map for custom originalPrice display (not from DB)
+const customOriginalPrices: { [key: string]: number } = {
+  "Bisnis & Entrepreneurship": 40000,
+  "Digital Marketing": 50000,
+  "Kesehatan & Lifestyle": 45000,
+  "Keuangan & Investasi": 50000,
+  "Kreatif & Desain": 35000,
+  "Pendidikan & Pengembangan Diri": 45000,
+  "Teknologi & Programming": 40000,
+};
+
 export function CategoriesSection() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,78 +136,73 @@ export function CategoriesSection() {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {categories.map((category, index) => {
-            const IconComponent = iconMap[category.name] || Briefcase;
-            const colors = colorMap[category.name] || { color: "from-gray-500 to-gray-600", hoverColor: "hover:from-gray-600 hover:to-gray-700" };
-            // Buat originalPrice variasi random agar badge hemat tidak sama
-            const randomMultiplier = 1.5 + Math.random();
-            const fakeOriginalPrice = Math.round(category.price * randomMultiplier + 10000);
-            const discountPercentage = getDiscountPercentage(fakeOriginalPrice, category.price);
-            
-            return (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10 }}
-                className={`relative bg-gradient-to-br ${colors.color} ${colors.hoverColor} rounded-2xl p-6 text-white shadow-xl transition-all duration-300 cursor-pointer group`}
-              >
-                {/* Discount Badge */}
-                <div className="absolute -top-3 -right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-1 shadow-lg">
-                  <Percent className="h-3 w-3" />
-                  <span>{discountPercentage}% OFF</span>
-                </div>
-
-                {/* Background Pattern */}
-                <div className="absolute inset-0 bg-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                <div className="relative z-10">
-                  {/* Icon */}
-                  <div className="mb-4">
-                    <IconComponent className="h-12 w-12" />
+          {categories
+            .filter(category => category.slug !== 'bundel-spesial-7-kategori')
+            .map((category, index) => {
+              const IconComponent = iconMap[category.name] || Briefcase;
+              const colors = colorMap[category.name] || { color: "from-gray-500 to-gray-600", hoverColor: "hover:from-gray-600 hover:to-gray-700" };
+              // Use custom originalPrice for display
+              const displayOriginalPrice = customOriginalPrices[category.name] ?? category.originalPrice;
+              const discountPercentage = displayOriginalPrice > 0 ? Math.round(((displayOriginalPrice - category.price) / displayOriginalPrice) * 100) : 0;
+              
+              return (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -10 }}
+                  className={`relative bg-gradient-to-br ${colors.color} ${colors.hoverColor} rounded-2xl p-6 text-white shadow-xl transition-all duration-300 cursor-pointer group`}
+                >
+                  {/* Discount Badge */}
+                  <div className="absolute -top-3 -right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center space-x-1 shadow-lg">
+                    <Percent className="h-3 w-3" />
+                    <span>% {discountPercentage} OFF</span>
                   </div>
 
-                  {/* Category Info */}
-                  <h3 className="text-xl font-bold mb-2 leading-tight">{category.name}</h3>
-                  <p className="text-white/80 mb-4 text-sm line-clamp-2">{category.description}</p>
-
-                  {/* Ebook Count */}
-                  <div className="mb-4">
-                    <div className="text-2xl font-bold">{category.ebookCount}+</div>
-                    <div className="text-white/80 text-sm">Premium Ebooks</div>
-                  </div>
-
-                  {/* Price Section */}
-                  <div className="mb-6">
-                    <div className="flex flex-col gap-1 mb-2">
-                      <span className="text-3xl font-extrabold text-white">Rp {formatPrice(category.price)}</span>
-                      <span className="text-xl font-bold text-white/70 line-through">Rp {formatPrice(fakeOriginalPrice)}</span>
-                      <span className="mt-1 px-3 py-1 inline-block rounded-full bg-white/20 text-white text-xs font-semibold w-fit">Hemat Rp {formatPrice(fakeOriginalPrice - category.price)}</span>
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 bg-white/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10">
+                    {/* Icon */}
+                    <div className="mb-4">
+                      <IconComponent className="h-12 w-12" />
                     </div>
+                    {/* Category Info */}
+                    <h3 className="text-xl font-bold mb-2 leading-tight">{category.name}</h3>
+                    <p className="text-white/80 mb-4 text-sm line-clamp-2">{category.description}</p>
+                    {/* Ebook Count */}
+                    <div className="mb-4">
+                      <div className="text-2xl font-bold">{category.ebookCount}+</div>
+                      <div className="text-white/80 text-sm">Premium Ebooks</div>
+                    </div>
+                    {/* Price Section */}
+                    <div className="mb-6">
+                      <div className="flex flex-col gap-1 mb-2">
+                        <span className="text-3xl font-extrabold text-white">Rp {formatPrice(category.price)}</span>
+                        <span className="text-xl font-bold text-white/70 line-through">Rp {formatPrice(displayOriginalPrice)}</span>
+                        <span className="mt-1 px-3 py-1 inline-block rounded-full bg-white/20 text-white text-xs font-semibold w-fit">Hemat Rp {formatPrice(displayOriginalPrice - category.price)}</span>
+                      </div>
+                    </div>
+                    {/* Buy Button */}
+                    <button 
+                      className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-2 group-hover:bg-white group-hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleBuyNow(category)}
+                      disabled={status === "loading"}
+                    >
+                      <ShoppingCart className="h-5 w-5" />
+                      <span>
+                        {status === "loading" ? "Loading..." : 
+                         !session ? "Login & Beli" : 
+                         "Beli Sekarang"}
+                      </span>
+                    </button>
                   </div>
-
-                  {/* Buy Button */}
-                  <button 
-                    className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-2 group-hover:bg-white group-hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleBuyNow(category)}
-                    disabled={status === "loading"}
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    <span>
-                      {status === "loading" ? "Loading..." : 
-                       !session ? "Login & Beli" : 
-                       "Beli Sekarang"}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Hover Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </motion.div>
-            );
-          })}
+                  {/* Hover Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </motion.div>
+              );
+            })}
         </div>
 
         {/* Bottom CTA */}

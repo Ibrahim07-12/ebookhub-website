@@ -12,7 +12,7 @@ async function main() {
       slug: "bisnis-entrepreneurship",
       ebookCount: 100,
       price: 15000,
-      originalPrice: 15000,
+      originalPrice: 40000,
       driveLink: "https://drive.google.com/drive/folders/1o_O_lwAVqiyZxJEBnE-9aws5lScSMmH-?usp=drive_link"
     },
     {
@@ -22,7 +22,7 @@ async function main() {
       slug: "digital-marketing",
       ebookCount: 100,
       price: 12000,
-      originalPrice: 12000,
+      originalPrice: 50000,
       driveLink: "https://drive.google.com/drive/folders/1SU3EbZ1TCsZ4TL1RTb3rcd_Bc4eeq5vj?usp=drive_link"
     },
     {
@@ -32,7 +32,7 @@ async function main() {
       slug: "kesehatan-lifestyle",
       ebookCount: 100,
       price: 10000,
-      originalPrice: 10000,
+      originalPrice: 45000,
       driveLink: "https://drive.google.com/drive/folders/13kHX_d1BjAtS1mxObgia91-zyhVkeMu7?usp=drive_link"
     },
     {
@@ -42,7 +42,7 @@ async function main() {
       slug: "keuangan-investasi",
       ebookCount: 100,
       price: 15000,
-      originalPrice: 15000,
+      originalPrice: 50000,
       driveLink: "https://drive.google.com/drive/folders/1Qnlow_bAjXCwnpHOy2b1t0c809ETPRZI?usp=drive_link"
     },
     {
@@ -52,7 +52,7 @@ async function main() {
       slug: "kreatif-desain",
       ebookCount: 100,
       price: 12000,
-      originalPrice: 12000,
+      originalPrice: 35000,
       driveLink: "https://drive.google.com/drive/folders/1ZK5V5sj33pQecTkgxuKHBqgCbLDXaYF1?usp=drive_link"
     },
     {
@@ -62,7 +62,7 @@ async function main() {
       slug: "pendidikan-pengembangan-diri",
       ebookCount: 100,
       price: 10000,
-      originalPrice: 10000,
+      originalPrice: 45000,
       driveLink: "https://drive.google.com/drive/folders/1hVzrqSDMcQhGVO_f_v9GU7634aiXShRi?usp=drive_link"
     },
     {
@@ -72,7 +72,7 @@ async function main() {
       slug: "teknologi-programming",
       ebookCount: 100,
       price: 15000,
-      originalPrice: 15000,
+      originalPrice: 40000,
       driveLink: "https://drive.google.com/drive/folders/1ul9fwSLw_FPHRlj2y4BjXI4-XGWDOyU8?usp=drive_link"
     }
   ]

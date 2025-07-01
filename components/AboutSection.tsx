@@ -7,9 +7,9 @@ export function AboutSection() {
   const { data: session } = useSession();
   const handleBundleClick = () => {
     if (!session?.user) {
-      router.push("/auth/login?callbackUrl=/payment/bundle");
+      router.push("/auth/login?callbackUrl=/payment/checkout?bundle=bundel-spesial-7-kategori");
     } else {
-      router.push("/payment/bundle");
+      router.push("/payment/checkout?bundle=bundel-spesial-7-kategori");
     }
   };
   return (

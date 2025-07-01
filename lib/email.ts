@@ -208,3 +208,96 @@ export async function sendOrderConfirmationEmail({
     throw error;
   }
 }
+
+// Fungsi untuk mengirim email bundle 7 kategori
+export async function sendBundleEmail({
+  userEmail,
+  userName,
+  orderId,
+  bundleLinks
+}: {
+  userEmail: string;
+  userName: string;
+  orderId: string;
+  bundleLinks: { name: string; driveLink: string }[];
+}) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const htmlTemplate = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Bundle Ebook 7 Kategori</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ffb347 0%, #ff5e62 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+        .order-info { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        .drive-link { margin-bottom: 12px; }
+        .drive-link a { color: #1976d2; font-weight: bold; text-decoration: none; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Selamat! Pembelian Bundle 7 Kategori Berhasil</h1>
+          <p>Terima kasih atas pembelian bundle ebook premium Anda</p>
+        </div>
+        <div class="content">
+          <h2>Halo ${userName}!</h2>
+          <p>Pembayaran Anda telah berhasil diproses. Berikut adalah link Google Drive untuk semua kategori:</p>
+          <div class="order-info">
+            <h3>📚 Link Download 7 Kategori</h3>
+            <ul style="padding-left: 18px;">
+              ${bundleLinks.map(link => `<li class="drive-link"><span>${link.name}:</span> <a href="${link.driveLink}" target="_blank">${link.driveLink}</a></li>`).join('')}
+            </ul>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Status:</strong> ✅ Berhasil</p>
+          </div>
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h4>📝 Instruksi Download:</h4>
+            <ol>
+              <li>Klik link pada masing-masing kategori di atas</li>
+              <li>Anda akan diarahkan ke Google Drive</li>
+              <li>Klik "Download" atau "Unduh" untuk menyimpan file</li>
+              <li>Nikmati semua ebook premium Anda!</li>
+            </ol>
+          </div>
+          <p><strong>Catatan:</strong> Semua link berlaku selamanya. Anda dapat mengaksesnya kapan saja.</p>
+          <p>Jika Anda mengalami kesulitan dalam mengunduh atau memiliki pertanyaan, jangan ragu untuk menghubungi kami.</p>
+          <p>Terima kasih telah berbelanja di toko ebook kami!</p>
+        </div>
+        <div class="footer">
+          <p>Email ini dikirim otomatis, mohon jangan membalas email ini.</p>
+          <p>© 2024 Ebook Store. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const mailOptions = {
+    from: `"Ebook Store" <${process.env.EMAIL_USER}>`,
+    to: userEmail,
+    subject: `✅ Bundle 7 Kategori Ebook - Semua Link Download`,
+    html: htmlTemplate,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Bundle email sent successfully:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending bundle email:', error);
+    throw error;
+  }
+}
