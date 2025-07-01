@@ -1,12 +1,12 @@
 'use client';
+import { Suspense, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
 
 const BUNDLE_ORIGINAL_PRICE = 120000;
 const BUNDLE_DISCOUNT_PRICE = 60000;
 const BUNDLE_SAVING = BUNDLE_ORIGINAL_PRICE - BUNDLE_DISCOUNT_PRICE;
 
-export default function PaymentCheckoutPage() {
+function PaymentCheckoutContent() {
   const searchParams = useSearchParams();
   const bundle = searchParams.get('bundle');
   const [loading, setLoading] = useState(false);
@@ -112,5 +112,13 @@ export default function PaymentCheckoutPage() {
         <p>Silakan kembali dan pilih paket yang ingin dibeli.</p>
       </div>
     </div>
+  );
+}
+
+export default function PaymentCheckoutPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-white bg-[#0B1120]">Loading...</div>}>
+      <PaymentCheckoutContent />
+    </Suspense>
   );
 }
