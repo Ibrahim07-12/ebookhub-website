@@ -54,43 +54,19 @@ export async function POST(request: NextRequest) {
       });
       console.log('Purchase updated to success:', orderId);
 
-      // Kirim email bundle jika kategori bundle, jika tidak kirim email biasa
+      // Send email with ebook link (handle null email)
       if (purchase.user.email) {
         try {
-          if (
-            purchase.category.name.toLowerCase().includes('bundle') ||
-            purchase.category.slug === 'bundle-7-kategori'
-          ) {
-            // Kirim email bundle 7 kategori
-            const bundleLinks = [
-              { name: 'Bisnis & Enterpreneurship', driveLink: 'https://drive.google.com/drive/folders/1o_O_lwAVqiyZxJEBnE-9aws5lScSMmH-?usp=drive_link' },
-              { name: 'Digital Marketing', driveLink: 'https://drive.google.com/drive/folders/1SU3EbZ1TCsZ4TL1RTb3rcd_Bc4eeq5vj?usp=drive_link' },
-              { name: 'Kesehatan & Lifestyle', driveLink: 'https://drive.google.com/drive/folders/13kHX_d1BjAtS1mxObgia91-zyhVkeMu7?usp=drive_link' },
-              { name: 'Keuangan & Investasi', driveLink: 'https://drive.google.com/drive/folders/1Qnlow_bAjXCwnpHOy2b1t0c809ETPRZI?usp=drive_link' },
-              { name: 'Kreatif & Desain', driveLink: 'https://drive.google.com/drive/folders/1ZK5V5sj33pQecTkgxuKHBqgCbLDXaYF1?usp=drive_link' },
-              { name: 'Pendidikan & Pengembangan Diri', driveLink: 'https://drive.google.com/drive/folders/1hVzrqSDMcQhGVO_f_v9GU7634aiXShRi?usp=drive_link' },
-              { name: 'Teknologi & Programming', driveLink: 'https://drive.google.com/drive/folders/1ul9fwSLw_FPHRlj2y4BjXI4-XGWDOyU8?usp=drive_link' },
-            ];
-            const { sendBundleEmail } = await import('@/lib/email');
-            await sendBundleEmail({
-              userEmail: purchase.user.email,
-              userName: purchase.user.name || purchase.user.email,
-              orderId: purchase.orderId,
-              bundleLinks,
-            });
-            console.log('Bundle email sent to:', purchase.user.email);
-          } else {
-            await sendEbookEmail({
-              userEmail: purchase.user.email,
-              userName: purchase.user.name || purchase.user.email,
-              categoryName: purchase.category.name,
-              driveLink: purchase.category.driveLink,
-              orderId: purchase.orderId,
-            });
-            console.log('Ebook email sent to:', purchase.user.email);
-          }
+          await sendEbookEmail({
+            userEmail: purchase.user.email,
+            userName: purchase.user.name || purchase.user.email,
+            categoryName: purchase.category.name,
+            driveLink: purchase.category.driveLink,
+            orderId: purchase.orderId,
+          });
+          console.log('Ebook email sent to:', purchase.user.email);
         } catch (emailErr) {
-          console.error('Failed to send ebook/bundle email:', emailErr);
+          console.error('Failed to send ebook email:', emailErr);
         }
       } else {
         console.error('User email is null, cannot send ebook email.');

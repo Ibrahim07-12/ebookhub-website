@@ -22,112 +22,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { categoryId, amount, isBundle, bundleName } = await request.json();
+    const { categoryId, amount } = await request.json();
 
-    if (!amount || (!isBundle && !categoryId)) {
+    if (!categoryId || !amount) {
       return NextResponse.json(
-        { error: 'Amount is required, and categoryId is required for non-bundle.' },
+        { error: 'Category ID and amount are required' },
         { status: 400 }
       );
     }
 
     // Get category details
-    if (!isBundle) {
-      const category = await prisma.category.findUnique({
-        where: { id: categoryId },
-      });
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
 
-      if (!category) {
-        return NextResponse.json(
-          { error: 'Category not found' },
-          { status: 404 }
-        );
-      }
-
-      // Check if amount matches category price
-      if (amount !== category.price) {
-        return NextResponse.json(
-          { error: 'Invalid amount' },
-          { status: 400 }
-        );
-      }
+    if (!category) {
+      return NextResponse.json(
+        { error: 'Category not found' },
+        { status: 404 }
+      );
     }
 
-    // HANDLE BUNDLE ORDER
-    if (isBundle) {
-      // Cari kategori bundle berdasarkan nama/slug persis
-      const bundleCategory = await prisma.category.findFirst({
-        where: {
-          OR: [
-            { name: bundleName || "Bundel Spesial 7 Kategori" },
-            { slug: bundleName?.toLowerCase().replace(/ /g, '-') || "bundel-spesial-7-kategori" },
-            { slug: "bundel-spesial-7-kategori" },
-            { name: "Bundel Spesial 7 Kategori" },
-          ],
-        },
-      });
-      if (!bundleCategory) {
-        return NextResponse.json(
-          { error: 'Bundle category not found' },
-          { status: 404 }
-        );
-      }
-      // Cek harga (pastikan number, bukan string)
-      // console.log('amount:', amount, typeof amount, 'bundleCategory.price:', bundleCategory.price, typeof bundleCategory.price);
-      // if (parseInt(amount) !== parseInt(bundleCategory.price)) {
-      //   return NextResponse.json(
-      //     { error: `Invalid amount for bundle. Dikirim: ${amount}, DB: ${bundleCategory.price}` },
-      //     { status: 400 }
-      //   );
-      // }
-      // Generate unique order ID
-      const orderId = `ORDER-BUNDLE-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      // Create purchase record
-      const purchase = await prisma.purchase.create({
-        data: {
-          userId: session.user.id,
-          categoryId: bundleCategory.id,
-          orderId,
-          amount: Number(amount),
-          status: 'pending',
-        },
-      });
-      // Prepare Midtrans payload
-      const payload = {
-        transaction_details: {
-          order_id: orderId,
-          gross_amount: Number(amount),
-        },
-        customer_details: {
-          email: session.user.email,
-          first_name: session.user.name || session.user.email,
-        },
-        item_details: [
-          {
-            id: bundleCategory.id,
-            price: Number(amount),
-            quantity: 1,
-            name: bundleCategory.name,
-          },
-        ],
-      };
-      // Call Midtrans Snap API
-      const response = await fetch(midtransBaseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization':
-            'Basic ' + Buffer.from(midtransServerKey + ':').toString('base64'),
-        },
-        body: JSON.stringify(payload),
-      });
-      const midtransRes = await response.json();
-      console.log('Midtrans response:', midtransRes); // Tambah log detail
-      if (!midtransRes.token) {
-        return NextResponse.json({ error: midtransRes.status_message || 'Failed to create transaction', midtransRes }, { status: 500 });
-      }
-      return NextResponse.json({ snapToken: midtransRes.token, redirect_url: midtransRes.redirect_url, orderId });
+    // Check if amount matches category price
+    if (amount !== category.price) {
+      return NextResponse.json(
+        { error: 'Invalid amount' },
+        { status: 400 }
+      );
     }
 
     // Generate unique order ID
@@ -137,7 +58,7 @@ export async function POST(request: NextRequest) {
     const purchase = await prisma.purchase.create({
       data: {
         userId: session.user.id,
-        categoryId: categoryId,
+        categoryId: category.id,
         orderId,
         amount,
         status: 'pending',
@@ -181,10 +102,10 @@ export async function POST(request: NextRequest) {
       },
       item_details: [
         {
-          id: categoryId,
+          id: category.id,
           price: amount,
           quantity: 1,
-          name: categoryId,
+          name: category.name,
         },
       ],
     };
