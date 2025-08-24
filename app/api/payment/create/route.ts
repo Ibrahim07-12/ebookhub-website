@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
     // Create purchase record in database
     const userId = String(session.user.id);
     await db.insert(purchases).values({
+      id: orderId,
       userId,
       categoryId: String(category.id),
       orderId,
