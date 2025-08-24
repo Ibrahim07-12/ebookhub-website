@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 async function main() {
   const seedCategories = [
     {
+      id: "bisnis-entrepreneurship",
       name: "Bisnis & Entrepreneurship",
       description: "Panduan lengkap untuk membangun dan mengembangkan bisnis Anda",
       image: "/images/business-entrepreneurship.jpg",
@@ -15,6 +16,7 @@ async function main() {
       driveLink: "https://drive.google.com/drive/folders/1o_O_lwAVqiyZxJEBnE-9aws5lScSMmH-?usp=drive_link"
     },
     {
+      id: "digital-marketing",
       name: "Digital Marketing",
       description: "Strategi marketing digital untuk meningkatkan penjualan online",
       image: "/images/digital-marketing.jpg",
@@ -25,6 +27,7 @@ async function main() {
       driveLink: "https://drive.google.com/drive/folders/1SU3EbZ1TCsZ4TL1RTb3rcd_Bc4eeq5vj?usp=drive_link"
     },
     {
+      id: "kesehatan-lifestyle",
       name: "Kesehatan & Lifestyle",
       description: "Tips kesehatan, gaya hidup sehat, dan wellness untuk kehidupan yang lebih baik",
       image: "/images/health-lifestyle.jpg",
@@ -35,6 +38,7 @@ async function main() {
       driveLink: "https://drive.google.com/drive/folders/13kHX_d1BjAtS1mxObgia91-zyhVkeMu7?usp=drive_link"
     },
     {
+      id: "keuangan-investasi",
       name: "Keuangan & Investasi",
       description: "Panduan mengelola keuangan pribadi dan strategi investasi yang menguntungkan",
       image: "/images/finance-investment.jpg",
@@ -45,6 +49,7 @@ async function main() {
       driveLink: "https://drive.google.com/drive/folders/1Qnlow_bAjXCwnpHOy2b1t0c809ETPRZI?usp=drive_link"
     },
     {
+      id: "kreatif-desain",
       name: "Kreatif & Desain",
       description: "Teknik desain grafis, UI/UX, dan pengembangan kreativitas visual",
       image: "/images/creative-design.jpg",
@@ -55,6 +60,7 @@ async function main() {
       driveLink: "https://drive.google.com/drive/folders/1ZK5V5sj33pQecTkgxuKHBqgCbLDXaYF1?usp=drive_link"
     },
     {
+      id: "pendidikan-pengembangan-diri",
       name: "Pendidikan & Pengembangan Diri",
       description: "Pengembangan diri, skill building, dan pembelajaran berkelanjutan",
       image: "/images/education-self-development.jpg",
@@ -69,7 +75,7 @@ async function main() {
   for (const cat of seedCategories) {
     const existing = await db.select().from(categories).where(eq(categories.slug, cat.slug)).limit(1);
     if (existing.length === 0) {
-      await db.insert(categories).values(cat);
+      await db.insert(categories).values([cat]);
       console.log(`Kategori ${cat.name} berhasil ditambahkan!`);
     } else {
       console.log(`Kategori ${cat.name} sudah ada.`);
