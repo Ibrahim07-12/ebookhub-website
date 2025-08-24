@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/drizzle';
+import { categories } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
@@ -15,11 +17,8 @@ export async function GET(
       );
     }
 
-    const category = await prisma.category.findUnique({
-      where: {
-        id: categoryId,
-      },
-    });
+  const result = await db.select().from(categories).where(eq(categories.id, categoryId)).limit(1);
+  const category = result[0];
 
     if (!category) {
       return NextResponse.json(
