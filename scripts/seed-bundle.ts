@@ -1,9 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import { db } from '../lib/drizzle';
+import { categories } from '../lib/schema';
+import { eq } from 'drizzle-orm';
 
 async function main() {
-  // Daftar kategori
-  const categories = [
+  const seedCategories = [
     {
       name: 'Bisnis & Entrepreneurship',
       slug: 'bisnis-entrepreneurship',
@@ -86,24 +86,20 @@ async function main() {
     },
   ];
 
-  for (const cat of categories) {
-    const existing = await prisma.category.findFirst({ where: { slug: cat.slug } });
-    if (!existing) {
-      await prisma.category.create({ data: cat });
+  for (const cat of seedCategories) {
+    const existing = await db.select().from(categories).where(eq(categories.slug, cat.slug)).limit(1);
+    if (existing.length === 0) {
+      await db.insert(categories).values(cat);
       console.log(`Kategori ${cat.name} berhasil ditambahkan!`);
     } else {
       console.log(`Kategori ${cat.name} sudah ada.`);
     }
   }
 
-  // Contoh ebook (jika ada model ebook, tambahkan di sini)
-  // Jika model ebook belum ada, tambahkan manual ke database atau update schema Prisma
-  // Contoh: await prisma.ebook.create({ data: { ... } })
+  console.log('🎉 Seed bundle completed!');
 }
 
 main().catch((e) => {
   console.error(e);
   process.exit(1);
-}).finally(() => {
-  prisma.$disconnect();
 });

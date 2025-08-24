@@ -1,10 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+const { db } = require('../lib/drizzle');
+const { categories } = require('../lib/schema');
+const { eq } = require('drizzle-orm');
 
 async function main() {
-  const cat = await prisma.category.findFirst({
-    where: { name: 'Bundle Special 7 Kategori' },
-  });
+  const catArr = await db.select().from(categories).where(eq(categories.name, 'Bundle Special 7 Kategori')).limit(1);
+  const cat = catArr[0];
   if (!cat) {
     console.log('Kategori tidak ditemukan!');
   } else {
@@ -20,11 +21,9 @@ async function main() {
       originalPrice: cat.originalPrice,
     });
   }
-  await prisma.$disconnect();
 }
 
 main().catch((e) => {
   console.error(e);
-  prisma.$disconnect();
   process.exit(1);
 });

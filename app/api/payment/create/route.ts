@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/drizzle';
+import { categories, purchases } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 
 // Midtrans configuration
@@ -32,10 +34,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get category details
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
-    });
-
+    const catArr = await db.select().from(categories).where(eq(categories.slug, categoryId));
+    const category = catArr[0];
     if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
@@ -55,14 +55,13 @@ export async function POST(request: NextRequest) {
     const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Create purchase record in database
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId: session.user.id,
-        categoryId: category.id,
-        orderId,
-        amount,
-        status: 'pending',
-      },
+    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id) : session.user.id;
+    await db.insert(purchases).values({
+      userId,
+      categoryId: category.id,
+      orderId,
+      amount,
+      status: 'pending',
     });
 
     // Send order confirmation email

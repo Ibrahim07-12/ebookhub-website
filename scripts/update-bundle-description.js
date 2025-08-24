@@ -1,19 +1,16 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+const { db } = require('../lib/drizzle');
+const { categories } = require('../lib/schema');
+const { eq } = require('drizzle-orm');
 
 async function main() {
-  const result = await prisma.category.updateMany({
-    where: { name: 'Bundle Special 7 Kategori' },
-    data: {
-      description: 'Akses ratusan ebook dari 7 kategori: Bisnis, Marketing, Kesehatan, Keuangan, Kreatif, Pendidikan, Teknologi. Semua update ebook baru otomatis masuk ke Drive Anda!',
-    },
-  });
-  console.log(`Deskripsi bundle 7 kategori diubah. Jumlah kategori terupdate: ${result.count}`);
-  await prisma.$disconnect();
+  await db.update(categories)
+    .set({ description: 'Akses ratusan ebook dari 7 kategori: Bisnis, Marketing, Kesehatan, Keuangan, Kreatif, Pendidikan, Teknologi. Semua update ebook baru otomatis masuk ke Drive Anda!' })
+    .where(eq(categories.name, 'Bundle Special 7 Kategori'));
+  console.log(`Deskripsi bundle 7 kategori diubah.`);
 }
 
 main().catch((e) => {
   console.error(e);
-  prisma.$disconnect();
   process.exit(1);
 });

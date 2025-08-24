@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { db } from '../lib/drizzle';
+import { categories } from '../lib/schema';
+import { eq } from 'drizzle-orm';
 
 async function main() {
-  // Seed categories
-  const categories = [
+  const seedCategories = [
     {
       name: "Bisnis & Entrepreneurship",
       description: "Panduan lengkap untuk membangun dan mengembangkan bisnis Anda",
@@ -61,58 +60,27 @@ async function main() {
       image: "/images/education-self-development.jpg",
       slug: "pendidikan-pengembangan-diri",
       ebookCount: 100,
-      price: 10000,
-      originalPrice: 10000,
-      driveLink: "https://drive.google.com/drive/folders/1hVzrqSDMcQhGVO_f_v9GU7634aiXShRi?usp=drive_link"
-    },
-    {
-      name: "Teknologi & Programming",
-      description: "Panduan programming, teknologi terbaru, dan pengembangan software",
-      image: "/images/technology-programming.jpg",
-      slug: "teknologi-programming",
-      ebookCount: 100,
       price: 15000,
       originalPrice: 15000,
       driveLink: "https://drive.google.com/drive/folders/1ul9fwSLw_FPHRlj2y4BjXI4-XGWDOyU8?usp=drive_link"
     }
-  ]
+  ];
 
-  console.log('🌱 Starting seed...')
-
-  for (const category of categories) {
-    await prisma.category.upsert({
-      where: { name: category.name },
-      update: {
-        description: category.description,
-        image: category.image,
-        slug: category.slug,
-        ebookCount: category.ebookCount,
-        price: category.price,
-        originalPrice: category.originalPrice,
-        driveLink: category.driveLink,
-      },
-      create: {
-        name: category.name,
-        description: category.description,
-        image: category.image,
-        slug: category.slug,
-        ebookCount: category.ebookCount,
-        price: category.price,
-        originalPrice: category.originalPrice,
-        driveLink: category.driveLink,
-      },
-    })
-    console.log(`✅ Created/Updated category: ${category.name}`)
+  for (const cat of seedCategories) {
+    const existing = await db.select().from(categories).where(eq(categories.slug, cat.slug)).limit(1);
+    if (existing.length === 0) {
+      await db.insert(categories).values(cat);
+      console.log(`Kategori ${cat.name} berhasil ditambahkan!`);
+    } else {
+      console.log(`Kategori ${cat.name} sudah ada.`);
+    }
   }
 
-  console.log('🎉 Seed completed!')
+  console.log('🎉 Seed completed!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seed:', e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+    console.error('❌ Error during seed:', e);
+    process.exit(1);
+  });

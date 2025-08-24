@@ -5,7 +5,6 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
 ## 🚀 Live Demo
@@ -24,14 +23,7 @@
 - **Responsive Design** (Mobile & Desktop)
 
 ### 💡 Technical Features
-- **Next.js 15** with App Router
-- **TypeScript** for type safety
-- **Tailwind CSS** for styling
-- **Framer Motion** for animations
-- **Prisma ORM** with MySQL
-- **NextAuth.js** for authentication
-- **Nodemailer** for email service
-- **Railway** for database hosting
+ **Drizzle ORM** with MySQL
 
 ## 🛠️ Tech Stack
 
@@ -40,7 +32,7 @@
 | [Next.js](https://nextjs.org/) | Full-stack Framework | 15.3.4 |
 | [TypeScript](https://www.typescriptlang.org/) | Type Safety | 5.0+ |
 | [Tailwind CSS](https://tailwindcss.com/) | Styling | 3.4+ |
-| [Prisma](https://www.prisma.io/) | Database ORM | 5.0+ |
+| Drizzle ORM | Database ORM | 0.44+ |
 | [NextAuth.js](https://next-auth.js.org/) | Authentication | 4.24+ |
 | [Framer Motion](https://www.framer.com/motion/) | Animations | 11.0+ |
 | [Midtrans](https://midtrans.com/) | Payment Gateway | Latest |
@@ -101,8 +93,6 @@ EMAIL_PASS="your-app-password"
 
 5. **Database setup**
 ```bash
-npx prisma db push
-npx prisma generate
 npm run seed
 ```
 
@@ -207,7 +197,6 @@ npm run seed
 - Protected API routes with authentication
 - Input validation and sanitization
 - Webhook signature verification
-- SQL injection prevention with Prisma
 
 ## 🤝 Contributing
 

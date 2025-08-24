@@ -1,7 +1,10 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/drizzle';
+import { purchases, categories } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,19 +18,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's purchases
-    const purchases = await prisma.purchase.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      include: {
-        category: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id) : session.user.id;
+    const purchaseArr = await db.select().from(purchases).where(eq(purchases.userId, userId));
+    // Fetch all categories for user's purchases
+  const categoryIds = purchaseArr.map(p => p.categoryId).filter((id): id is number => typeof id === 'number');
+    let categoryArr: any[] = [];
+    if (categoryIds.length > 0) {
+      const { inArray } = await import('drizzle-orm');
+      categoryArr = await db.select().from(categories).where(inArray(categories.id, categoryIds));
+    }
+    // Map category to purchase
+    const purchasesWithCategory = purchaseArr.map(p => {
+      const cat = categoryArr.find(c => c.id === p.categoryId) || {};
+      return {
+        ...p,
+        category: cat,
+      };
     });
-
-    return NextResponse.json(purchases);
+    // Sort by createdAt desc
+    purchasesWithCategory.sort((a, b) => (b.createdAt?.getTime?.() || 0) - (a.createdAt?.getTime?.() || 0));
+    return NextResponse.json(purchasesWithCategory);
   } catch (error) {
     console.error('Error fetching purchases:', error);
     return NextResponse.json(
