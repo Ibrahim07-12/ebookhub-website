@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -9,7 +8,7 @@ import { eq } from 'drizzle-orm';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session || !session.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -18,10 +17,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's purchases
-    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id) : session.user.id;
+    const userId = session.user.id;
     const purchaseArr = await db.select().from(purchases).where(eq(purchases.userId, userId));
     // Fetch all categories for user's purchases
-  const categoryIds = purchaseArr.map(p => p.categoryId).filter((id): id is number => typeof id === 'number');
+    const categoryIds = purchaseArr.map(p => p.categoryId).filter((id): id is string => typeof id === 'string');
     let categoryArr: any[] = [];
     if (categoryIds.length > 0) {
       const { inArray } = await import('drizzle-orm');

@@ -41,10 +41,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user and category
-    const userArr = await db.select().from(users).where(eq(users.id, purchase.userId));
-    const user = userArr[0];
-    const categoryArr = await db.select().from(categories).where(eq(categories.id, purchase.categoryId));
-    const category = categoryArr[0];
+  const userId = typeof purchase.userId === 'string' ? purchase.userId : String(purchase.userId ?? '');
+  const categoryId = typeof purchase.categoryId === 'string' ? purchase.categoryId : String(purchase.categoryId ?? '');
+  const userArr = await db.select().from(users).where(eq(users.id, userId));
+  const user = userArr[0];
+  const categoryArr = await db.select().from(categories).where(eq(categories.id, categoryId));
+  const category = categoryArr[0];
 
     // If payment is successful (settlement/capture)
     if (transactionStatus === 'settlement' || transactionStatus === 'capture') {
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
           transactionId,
           paymentType,
           downloadLink: category?.driveLink,
-          emailSent: true,
+          emailSent: 1,
         })
         .where(eq(purchases.id, purchase.id));
       console.log('Purchase updated to success:', orderId);
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
             userName: user.name || user.email,
             categoryName: category?.name ?? '',
             driveLink: category?.driveLink ?? '',
-            orderId: purchase.orderId,
+            orderId: purchase.orderId ?? '',
           });
           console.log('Ebook email sent to:', user.email);
         } catch (emailErr) {
