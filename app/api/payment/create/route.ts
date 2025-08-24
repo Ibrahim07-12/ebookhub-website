@@ -1,34 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/drizzle';
-import { categories, purchases } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
-import { sendOrderConfirmationEmail } from '@/lib/email';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/drizzle";
+import { categories, purchases } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
-// Midtrans configuration
+// Midtrans config
 const midtransServerKey = process.env.MIDTRANS_SERVER_KEY;
-const midtransIsProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
-const midtransBaseUrl = midtransIsProduction 
-  ? 'https://app.midtrans.com/snap/v1/transactions'
-  : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+const midtransIsProduction = process.env.MIDTRANS_IS_PRODUCTION === "false";
+const midtransBaseUrl = midtransIsProduction
+  ? "https://app.midtrans.com/snap/v1/transactions"
+  : "https://app.sandbox.midtrans.com/snap/v1/transactions";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const { categoryId, amount, email, name } = await request.json();
 
-    const { categoryId, amount } = await request.json();
-
-    if (!categoryId || !amount) {
+    if (!categoryId || !amount || !email || !name) {
       return NextResponse.json(
-        { error: 'Category ID and amount are required' },
+        { error: "categoryId, amount, email, and name are required" },
         { status: 400 }
       );
     }
@@ -37,58 +25,27 @@ export async function POST(request: NextRequest) {
     const catArr = await db.select().from(categories).where(eq(categories.slug, categoryId));
     const category = catArr[0];
     if (!category) {
-      return NextResponse.json(
-        { error: 'Category not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
     // Check if amount matches category price
     if (amount !== category.price) {
-      return NextResponse.json(
-        { error: 'Invalid amount' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
     // Generate unique order ID
     const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Create purchase record in database
-    const userId = String(session.user.id);
     await db.insert(purchases).values({
       id: orderId,
-      userId,
       categoryId: String(category.id),
       orderId,
       amount,
-      status: 'pending',
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
-
-    // Send order confirmation email
-    // try {
-    //   await sendOrderConfirmationEmail({
-    //     userEmail: session.user.email!,
-    //     userName: session.user.name || 'Customer',
-    //     categoryName: category.name,
-    //     orderId: orderId,
-    //     amount: amount
-    //   });
-    //   console.log('Order confirmation email sent to:', session.user.email);
-    // } catch (emailError) {
-    //   console.error('Failed to send order confirmation email:', emailError);
-    //   // Don't fail the order if email fails
-    // }
-
-    // For now, return dummy response since we don't have real Midtrans keys
-    if (!midtransServerKey || midtransServerKey.includes('dummy')) {
-      return NextResponse.json({
-        message: 'Payment simulation - Midtrans keys not configured',
-        token: 'dummy-token',
-        redirect_url: `/payment/success?order_id=${orderId}`,
-        order_id: orderId,
-      });
-    }
 
     // Prepare Midtrans payload
     const payload = {
@@ -97,8 +54,8 @@ export async function POST(request: NextRequest) {
         gross_amount: amount,
       },
       customer_details: {
-        email: session.user.email,
-        first_name: session.user.name || session.user.email,
+        email,
+        first_name: name,
       },
       item_details: [
         {
@@ -112,29 +69,28 @@ export async function POST(request: NextRequest) {
 
     // Call Midtrans Snap API
     const response = await fetch(midtransBaseUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization':
-          'Basic ' + Buffer.from(midtransServerKey + ':').toString('base64'),
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Basic " + Buffer.from(midtransServerKey + ":").toString("base64"),
       },
       body: JSON.stringify(payload),
     });
     const midtransRes = await response.json();
 
     if (!midtransRes.token) {
-      return NextResponse.json({ error: 'Failed to create transaction', midtransRes }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create transaction", midtransRes }, { status: 500 });
     }
 
     // Return snap_token to frontend
-    return NextResponse.json({ snap_token: midtransRes.token, redirect_url: midtransRes.redirect_url, orderId });
-
+    return NextResponse.json({
+      snap_token: midtransRes.token,
+      redirect_url: midtransRes.redirect_url,
+      orderId,
+    });
   } catch (error) {
-    console.error('Payment creation error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Payment creation error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
