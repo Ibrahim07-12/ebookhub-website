@@ -1,12 +1,13 @@
 import { NextAuthOptions } from "next-auth"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import { prisma } from "./prisma"
+import { db } from "./drizzle"
+import { users } from "./schema"
+import { eq } from "drizzle-orm"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // adapter: PrismaAdapter(prisma), // Sudah dihapus, bisa tambahkan Drizzle adapter jika ingin
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -24,11 +25,8 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
-        });
+        const userArr = await db.select().from(users).where(eq(users.email, credentials.email));
+        const user = userArr[0];
 
         if (!user || !user.password) {
           console.error("[AUTH] User tidak ditemukan atau password kosong", credentials.email);
