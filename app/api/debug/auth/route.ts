@@ -1,34 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/drizzle';
+import { users } from '@/lib/schema';
+import { accounts } from '@/lib/schema';
+import { sessions } from '@/lib/schema';
 
 export async function GET(request: NextRequest) {
   try {
     // Test database connection
-    const userCount = await prisma.user.count();
-    const accountCount = await prisma.account.count();
-    const sessionCount = await prisma.session.count();
-    
-    // Test schema structure
-    const users = await prisma.user.findMany({
-      take: 3,
-      include: {
-        accounts: true,
-        sessions: true
-      }
-    });
+  const userArr = await db.select().from(users);
+  const accountArr = await db.select().from(accounts);
+  const sessionArr = await db.select().from(sessions);
+  // Test schema structure
+  const sampleUsers = userArr.slice(0, 3);
 
     return NextResponse.json({
       success: true,
       database: {
         connected: true,
         counts: {
-          users: userCount,
-          accounts: accountCount,
-          sessions: sessionCount
+          users: userArr.length,
+          accounts: accountArr.length,
+          sessions: sessionArr.length
         }
       },
       schema: {
-        sampleUsers: users
+        sampleUsers
       },
       environment: {
         hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,

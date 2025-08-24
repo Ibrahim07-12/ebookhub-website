@@ -1,3 +1,28 @@
+export const accounts = pgTable('accounts', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  userId: varchar('userId', { length: 255 }),
+  type: varchar('type', { length: 255 }),
+  provider: varchar('provider', { length: 255 }),
+  providerAccountId: varchar('providerAccountId', { length: 255 }),
+  refresh_token: varchar('refresh_token', { length: 255 }),
+  access_token: varchar('access_token', { length: 255 }),
+  expires_at: integer('expires_at'),
+  token_type: varchar('token_type', { length: 255 }),
+  scope: varchar('scope', { length: 255 }),
+  id_token: varchar('id_token', { length: 255 }),
+  session_state: varchar('session_state', { length: 255 }),
+  createdAt: timestamp('createdAt'),
+  updatedAt: timestamp('updatedAt'),
+});
+
+export const sessions = pgTable('sessions', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  sessionToken: varchar('sessionToken', { length: 255 }),
+  userId: varchar('userId', { length: 255 }),
+  expires: timestamp('expires'),
+  createdAt: timestamp('createdAt'),
+  updatedAt: timestamp('updatedAt'),
+});
 import { pgTable, serial, varchar, integer, timestamp, text } from 'drizzle-orm/pg-core';
 
 export const categories = pgTable('categories', {
