@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
-import { prisma } from "../../../../lib/prisma"
+import { db } from "@/lib/drizzle"
+import { users } from "@/lib/schema"
+import { eq } from "drizzle-orm"
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,9 +16,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+  const existingArr = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  const existingUser = existingArr[0]
 
     if (existingUser) {
       return NextResponse.json(
@@ -29,13 +30,16 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-      }
+    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    await db.insert(users).values({
+      id,
+      email,
+      password: hashedPassword,
+      name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     })
+    const user = { id, email, name }
 
     return NextResponse.json(
       { message: "User created successfully", user: { id: user.id, email: user.email, name: user.name } },
