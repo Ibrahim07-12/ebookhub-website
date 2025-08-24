@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+const { prisma } = require('../../../../lib/prisma');
 import { sendEbookEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {

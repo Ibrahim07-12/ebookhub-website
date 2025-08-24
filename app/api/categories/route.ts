@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { prisma } from "../../../lib/prisma"
+const { prisma } = require("../../../lib/prisma")
 
 export async function GET() {
   try {

@@ -125,7 +125,7 @@ export function CategoriesSection() {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {categories.map((category, index) => {
+          {categories.filter(cat => cat.name !== 'Bundle Special 7 Kategori').map((category, index) => {
             const IconComponent = iconMap[category.name] || Briefcase;
             const colors = colorMap[category.name] || { color: "from-gray-500 to-gray-600", hoverColor: "hover:from-gray-600 hover:to-gray-700" };
             // Buat originalPrice variasi random agar badge hemat tidak sama

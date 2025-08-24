@@ -1,10 +1,27 @@
 'use client';
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export function AboutSection() {
   const router = useRouter();
   const { data: session } = useSession();
+  const [bundle, setBundle] = useState<any>(null);
+  const BUNDLE_ID = "cmenx3kgr0007u4y0j30ofkg5";
+
+  useEffect(() => {
+    async function fetchBundle() {
+      try {
+        const res = await fetch(`/api/categories/${BUNDLE_ID}`);
+        if (res.ok) {
+          const data = await res.json();
+          setBundle(data);
+        }
+      } catch (err) {}
+    }
+    fetchBundle();
+  }, []);
+
   const handleBundleClick = () => {
     if (!session?.user) {
       router.push("/auth/login?callbackUrl=/payment/bundle");
@@ -21,9 +38,9 @@ export function AboutSection() {
         </p>
         <div className="mt-8 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-left">
-            <div className="text-xl font-bold text-white mb-1">Bundel Spesial!</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-white mb-2">7 Kategori Ebook Hanya <span className="bg-white/20 px-2 py-1 rounded">Rp60.000</span></div>
-            <div className="text-white/80">Akses ratusan ebook dari 7 kategori: Bisnis, Marketing, Kesehatan, Keuangan, Kreatif, Pendidikan, Teknologi. Semua update ebook baru otomatis masuk ke Drive Anda!</div>
+            <div className="text-xl font-bold text-white mb-1">{bundle ? bundle.name : "Bundel Spesial!"}</div>
+            <div className="text-2xl md:text-3xl font-extrabold text-white mb-2">{bundle ? bundle.name : "7 Kategori Ebook"} Hanya <span className="bg-white/20 px-2 py-1 rounded">{bundle ? `Rp${bundle.price?.toLocaleString('id-ID')}` : "Rp60.000"}</span></div>
+            <div className="text-white/80">{bundle ? bundle.description : "Akses ratusan ebook dari 7 kategori: Bisnis, Marketing, Kesehatan, Keuangan, Kreatif, Pendidikan, Teknologi. Semua update ebook baru otomatis masuk ke Drive Anda!"}</div>
           </div>
           <button
             onClick={handleBundleClick}
