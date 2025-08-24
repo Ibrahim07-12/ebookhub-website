@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/drizzle';
+import { purchases, users, categories } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 import { sendEbookEmail } from '@/lib/email';
 
 // This is a test endpoint to simulate Midtrans webhook for testing purposes
@@ -27,13 +29,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the purchase
-    const purchase = await prisma.purchase.findUnique({
-      where: { orderId: orderId },
-      include: {
-        user: true,
-        category: true
+    const purchaseArr = await db.select().from(purchases).where(eq(purchases.orderId, orderId));
+    const purchase = purchaseArr[0];
+    let user = null;
+    let category = null;
+    if (purchase) {
+      if (purchase.userId) {
+        const userArr = await db.select().from(users).where(eq(users.id, purchase.userId));
+        user = userArr[0] || null;
       }
-    });
+      if (purchase.categoryId) {
+        const categoryArr = await db.select().from(categories).where(eq(categories.id, purchase.categoryId));
+        category = categoryArr[0] || null;
+      }
+    }
 
     if (!purchase) {
       return NextResponse.json(
@@ -51,32 +60,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Update purchase status
-    const updatedPurchase = await prisma.purchase.update({
-      where: { id: purchase.id },
-      data: {
-        status: status,
-        transactionId: `TEST-${Date.now()}`,
-        paymentType: 'bank_transfer',
-        updatedAt: new Date()
-      },
-      include: {
-        user: true,
-        category: true
-      }
-    });
+    await db.update(purchases).set({
+      status: status,
+      transactionId: `TEST-${Date.now()}`,
+      paymentType: 'bank_transfer',
+      updatedAt: new Date()
+    }).where(eq(purchases.id, purchase.id));
+    // Fetch updated purchase
+    const updatedArr = await db.select().from(purchases).where(eq(purchases.id, purchase.id));
+    const updatedPurchase = updatedArr[0];
 
     // If payment is successful, send ebook email
     if (status === 'success' && purchase.status !== 'success') {
       try {
         await sendEbookEmail({
-          userEmail: updatedPurchase.user.email!,
-          userName: updatedPurchase.user.name || 'Customer',
-          categoryName: updatedPurchase.category.name,
-          driveLink: updatedPurchase.category.driveLink || '',
+          userEmail: user?.email || '',
+          userName: user?.name || 'Customer',
+          categoryName: category?.name || '',
+          driveLink: category?.driveLink || '',
           orderId: orderId
         });
         
-        console.log('Test ebook email sent to:', updatedPurchase.user.email);
+        console.log('Test ebook email sent to:', user?.email);
       } catch (emailError) {
         console.error('Failed to send test ebook email:', emailError);
         return NextResponse.json(
@@ -88,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Status updated successfully',
-      purchase: updatedPurchase,
+      purchase: { ...updatedPurchase, user, category },
       emailSent: status === 'success'
     });
 

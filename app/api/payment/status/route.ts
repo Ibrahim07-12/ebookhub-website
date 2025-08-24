@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/drizzle';
+import { purchases, categories, users } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,15 +27,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Find purchase record
-    const purchase = await prisma.purchase.findUnique({
-      where: {
-        orderId: orderId,
-      },
-      include: {
-        category: true,
-        user: true,
-      },
-    });
+    const purchaseArr = await db.select().from(purchases).where(eq(purchases.orderId, orderId));
+    const purchase = purchaseArr[0];
+    let category = null;
+    let user = null;
+    if (purchase) {
+      if (purchase.categoryId) {
+        const categoryArr = await db.select().from(categories).where(eq(categories.id, purchase.categoryId));
+        category = categoryArr[0] || null;
+      }
+      if (purchase.userId) {
+        const userArr = await db.select().from(users).where(eq(users.id, purchase.userId));
+        user = userArr[0] || null;
+      }
+    }
 
     if (!purchase || purchase.userId !== session.user.id) {
       return NextResponse.json(
@@ -42,7 +49,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(purchase);
+  return NextResponse.json({ ...purchase, category, user });
 
   } catch (error) {
     console.error('Error fetching payment status:', error);
