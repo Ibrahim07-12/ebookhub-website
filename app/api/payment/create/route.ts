@@ -55,10 +55,10 @@ export async function POST(request: NextRequest) {
     const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Create purchase record in database
-    const userId = typeof session.user.id === 'string' ? parseInt(session.user.id) : session.user.id;
+    const userId = String(session.user.id);
     await db.insert(purchases).values({
       userId,
-      categoryId: category.id,
+      categoryId: String(category.id),
       orderId,
       amount,
       status: 'pending',

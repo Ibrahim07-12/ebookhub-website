@@ -29,8 +29,8 @@ export const users = pgTable('users', {
 
 export const purchases = pgTable('purchases', {
   id: serial('id').primaryKey(),
-  userId: integer('userId'),
-  categoryId: integer('categoryId'),
+  userId: varchar('userId', { length: 255 }),
+  categoryId: varchar('categoryId', { length: 255 }),
   orderId: varchar('orderId', { length: 255 }),
   amount: integer('amount'),
   status: varchar('status', { length: 50 }),
